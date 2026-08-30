@@ -23,7 +23,7 @@
       --muted: #c4b5c8;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; overflow-x: hidden; }
     body {
       min-height: 100dvh;
       background:
@@ -60,13 +60,34 @@
     .song-row {
       display: grid;
       grid-template-columns: 76px minmax(110px,1.2fr) 72px 72px 72px 36px 36px 36px;
+      grid-template-areas: "type title c1 c2 c3 tog del ins";
       gap: 6px;
       align-items: center;
     }
+    .song-row .type-select { grid-area: type; }
+    .song-row .ac-wrap { grid-area: title; }
+    .song-row .tog-btn { grid-area: tog; }
+    .song-row .del-btn { grid-area: del; }
+    .song-row .ins-btn { grid-area: ins; }
     .centers { display: contents; }
+    .song-row .centers select:nth-child(1) { grid-area: c1; }
+    .song-row .centers select:nth-child(2) { grid-area: c2; }
+    .song-row .centers select:nth-child(3) { grid-area: c3; }
     @media (max-width: 720px) {
-      .song-row { grid-template-columns: 76px 1fr 36px 36px 36px; }
-      .song-row .centers { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+      .song-row {
+        grid-template-columns: 64px 1fr 34px 34px 34px;
+        grid-template-areas:
+          "type title tog del ins"
+          "centers centers centers centers centers";
+        row-gap: 8px;
+      }
+      .song-row .centers {
+        grid-area: centers;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+      }
+      .song-row .type-select { font-size: 13px; padding-left: 6px; padding-right: 4px; }
     }
     .member-box {
       margin-top: 6px;
@@ -702,6 +723,7 @@
         const row = document.createElement("div");
         row.className = "song-row";
         const sel = document.createElement("select");
+        sel.className = "type-select";
         [["song","曲"],["mc","MC"],["overture","OV"],["en","EN"]].forEach(([v,l]) => {
           const o = document.createElement("option");
           o.value = v; o.textContent = l;
@@ -729,7 +751,7 @@
           centersWrap.appendChild(center);
         }
         const tog = document.createElement("button");
-        tog.className = "del-row";
+        tog.className = "del-row tog-btn";
         tog.type = "button";
         tog.textContent = song.open ? "▲" : "▼";
         tog.title = "メンバー欄";
@@ -739,7 +761,7 @@
           renderPreview();
         };
         const del = document.createElement("button");
-        del.className = "del-row";
+        del.className = "del-row del-btn";
         del.type = "button";
         del.textContent = "−";
         del.onclick = () => {
@@ -749,7 +771,7 @@
           renderPreview();
         };
         const ins = document.createElement("button");
-        ins.className = "del-row";
+        ins.className = "del-row ins-btn";
         ins.type = "button";
         ins.textContent = "+";
         ins.title = "この下に1枠追加";
