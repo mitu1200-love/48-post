@@ -707,11 +707,11 @@
       $("addGenAll").onclick = () => {
         const data = currentPresetGroupData();
         const gen = $("memberPresetGen") ? $("memberPresetGen").value : "";
-        if (!gen) { alert("期を選択してください（「選択しない」のままではこのボタンは使えません。グループ全員を追加したい場合は「グループを全員追加」を使ってください）"); return; }
+        if (!gen) { toast("期を選択してください（「グループを全員追加」も使えます）"); return; }
         const list = data[gen] || [];
-        if (!list.length) return;
-        if (!confirm(`「${gen}」の${list.length}名をまとめて追加しますか？`)) return;
+        if (!list.length) { toast("このグループ・期にはメンバーがいません"); return; }
         addCastNames(list);
+        toast(`「${gen}」の${list.length}名を追加しました`);
       };
     }
     if ($("addGroupAll")) {
@@ -719,9 +719,9 @@
         const data = currentPresetGroupData();
         const groupName = $("memberPresetGroup") ? $("memberPresetGroup").value : "";
         const all = Object.values(data).flat();
-        if (!all.length) return;
-        if (!confirm(`「${groupName}」全${all.length}名をまとめて追加しますか？`)) return;
+        if (!all.length) { toast("このグループにはメンバーがいません"); return; }
         addCastNames(all);
+        toast(`「${groupName}」全${all.length}名を追加しました`);
       };
     }
     $("group").addEventListener("input", () => {
