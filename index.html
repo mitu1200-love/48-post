@@ -1302,20 +1302,45 @@
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
         toast(msg || "画像をコピーしました。Xに貼れます");
       } catch {
-        const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
-        a.download = "setlist.png";
-        a.click();
-        toast("この端末は画像コピー非対応のため保存しました");
+        await shareOrOpenImage(blob, "この端末は画像コピー非対応のため、共有・保存画面を開きました");
       }
     }
-    function saveImage() {
+    function isIOS() {
+      return /iP(hone|od|ad)/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+    // iOS Safariは <a download> でのプログラム的な保存に対応していないため、
+    // 1) 共有シート（そこから「画像を保存」）→ 2) iOSなら新しいタブで開いて長押し保存 →
+    // 3) それ以外（PC等）は通常のダウンロード、の順で確実な方法を選ぶ。
+    async function shareOrOpenImage(blob, fallbackMsg) {
+      const file = new File([blob], "setlist.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "セトリ画像" });
+          toast("共有画面から保存できます");
+          return;
+        } catch (e) {
+          if (e && e.name === "AbortError") return; // ユーザーが共有をキャンセルしただけ
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      if (isIOS()) {
+        window.open(url, "_blank");
+        toast(fallbackMsg || "新しいタブで画像を開きました。長押しして「写真に保存」してください");
+      } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "setlist.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        toast("画像を保存しました");
+      }
+    }
+    async function saveImage() {
       const canvas = drawSetlistImage();
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = "setlist.png";
-      a.click();
-      toast("画像を保存しました");
+      const blob = await canvasToBlob(canvas);
+      await shareOrOpenImage(blob, "新しいタブで画像を開きました。長押しして「写真に保存」してください");
     }
     async function copyText(text, msg) {
       const out = plainText(text);
