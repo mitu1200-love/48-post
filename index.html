@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ec4899" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <title>48セトリ投稿メーカー</title>
+  <style>
+    :root {
+      --bg: #0f0a12;
+      --card: #1a1220;
+      --card2: #24182c;
+      --line: #3a2a44;
+      --pink: #ec4899;
+      --pink2: #f472b6;
+      --lavender: #c084fc;
+      --text: #fdf4ff;
+      --muted: #c4b5c8;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+    body {
+      min-height: 100dvh;
+      background:
+        radial-gradient(900px 400px at 10% -10%, #3b1d3a 0%, transparent 50%),
+        radial-gradient(700px 300px at 100% 0%, #2a1650 0%, transparent 45%),
+        var(--bg);
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 18px 14px 56px; }
+    header { text-align: center; margin-bottom: 16px; }
+    .logo { font-weight: 800; letter-spacing: .04em; font-size: 20px; }
+    .logo span { color: var(--pink2); }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .card {
+      background: linear-gradient(180deg, var(--card), #160e1b);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input, textarea, select {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 16px;
+      outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--pink); }
+    textarea { min-height: 170px; resize: vertical; line-height: 1.55; }
+    .song-block { margin-bottom: 8px; }
+    .song-row {
+      display: grid;
+      grid-template-columns: 76px minmax(110px,1.2fr) 72px 72px 72px 36px 36px 36px;
+      gap: 6px;
+      align-items: center;
+    }
+    .centers { display: contents; }
+    @media (max-width: 720px) {
+      .song-row { grid-template-columns: 76px 1fr 36px 36px 36px; }
+      .song-row .centers { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    }
+    .member-box {
+      margin-top: 6px;
+      padding: 8px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: #160e1b;
+    }
+    .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .fold-head {
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: none;
+    }
+    .fold-head label { margin: 0; font-size: 14px; color: var(--text); font-weight: 700; }
+    .fold-arrow { color: var(--pink2); font-size: 13px; }
+    .del-row {
+      width: 36px; height: 36px; border-radius: 10px; padding: 0;
+      background: #3a1d2c; color: #fda4af; border: 1px solid var(--line);
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn-main { background: linear-gradient(90deg, var(--pink), var(--lavender)); color: #1a0514; flex: 1; min-width: 120px; }
+    .btn-ghost { background: #2a1d32; color: var(--text); border: 1px solid var(--line); }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .chip {
+      background: #2a1d32; border: 1px solid var(--line); color: var(--text);
+      border-radius: 999px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+    }
+    .chip.active { background: #4a1d3a; border-color: var(--pink2); color: #fff; }
+    .preview {
+      white-space: pre-wrap;
+      background: #120c16;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 120px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+      background: #064e3b; color: #ecfdf5; padding: 10px 16px; border-radius: 999px;
+      opacity: 0; pointer-events: none; transition: .25s; z-index: 20;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .split-note { color: #f9a8d4; font-size: 12px; margin-top: 8px; }
+    .part-label { font-size: 12px; color: var(--pink2); margin: 8px 0 6px; font-weight: 700; }
+    .hit { color: #fda4af; font-weight: 800; font-size: 1.05em; }
+    #oshiHit { margin-top: 8px; font-size: 12px; color: #f9a8d4; }
+    .ac-wrap { position: relative; }
+    .ac-list {
+      display: none;
+      position: absolute;
+      left: 0; right: 0; top: 100%;
+      margin-top: 4px;
+      background: var(--card2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      max-height: 190px;
+      overflow-y: auto;
+      z-index: 30;
+      box-shadow: 0 8px 20px rgba(0,0,0,.35);
+    }
+    .ac-list.show { display: block; }
+    .ac-item {
+      padding: 9px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--line);
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.active { background: #3a1d3a; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">48セトリ<span>投稿</span>メーカー</div>
+      <div class="sub">推し強調・分割コピー対応</div>
+    </header>
+
+    <section class="card">
+      <div class="grid2">
+        <div>
+          <label>日付</label>
+          <input id="date" type="date" />
+        </div>
+        <div>
+          <label>グループ</label>
+          <input id="group" placeholder="AKB48 / NMB48" />
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label>公演名</label>
+        <input id="title" placeholder="例: PARTYが始まるよ 大阪公演" />
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div>
+          <label>会場</label>
+          <input id="venue" placeholder="例: グランキューブ大阪" />
+        </div>
+        <div>
+          <label>昼夜</label>
+          <div class="chips" style="margin-top:0">
+            <button class="chip" id="slotNone" data-slot="">なし</button>
+            <button class="chip active" id="slotDay" data-slot="昼公演">昼公演</button>
+            <button class="chip" id="slotNight" data-slot="夜公演">夜公演</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="fold-head" id="castFoldHead">
+        <label>本日の出演メンバー</label>
+        <span class="fold-arrow" id="castFoldArrow">▼</span>
+      </div>
+      <div id="castFoldBody">
+        <div class="chips" id="castPresets" style="margin-top:10px"></div>
+        <div class="row">
+          <select id="memberPresetGroup" style="flex:1; min-width:110px"></select>
+          <select id="memberPresetGen" style="flex:1; min-width:110px"></select>
+        </div>
+        <div class="row">
+          <select id="memberPresetSelect" style="flex:2; min-width:150px"></select>
+          <button class="btn-ghost" id="addCastFromPreset">追加</button>
+        </div>
+        <div class="row">
+          <button class="btn-ghost" id="addGroupAll">グループを全員追加</button>
+          <button class="btn-ghost" id="addGenAll">この期を全員追加</button>
+        </div>
+        <div class="row">
+          <input id="castInput" placeholder="リストにない名前を直接入力" style="flex:1; min-width:160px" />
+          <button class="btn-ghost" id="addCast">追加</button>
+          <button class="btn-ghost" id="clearCast">出演クリア</button>
+        </div>
+        <div class="hint">ここに入れたメンバーが、センターとメンバー欄のプルダウンに出ます。上のプルダウンは members.js の一覧から選べます（同じフォルダに置いてください）。</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="fold-head" id="oshiFoldHead">
+        <label>推しメンバー（カンマ区切り）</label>
+        <span class="fold-arrow" id="oshiFoldArrow">▼</span>
+      </div>
+      <div id="oshiFoldBody">
+        <input id="oshi" placeholder="例: 山﨑空, 正鋳真優, 山口結愛" style="margin-top:10px" />
+        <div class="hint">ヒットした名前はプレビューで太字になります。Xの本文は太字にできないので、コピー時は名前そのままです。</div>
+        <div class="chips" id="oshiPresets"></div>
+        <div class="row">
+          <input id="customOshi" placeholder="例: 小栗有以" style="flex:1; min-width:160px" />
+          <button class="btn-ghost" id="addOshiPreset">プリセット追加</button>
+          <button class="btn-ghost" id="clearOshiPreset">プリセット全削除</button>
+        </div>
+        <div id="oshiHit"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="fold-head" id="tagFoldHead">
+        <label>ハッシュタグ</label>
+        <span class="fold-arrow" id="tagFoldArrow">▼</span>
+      </div>
+      <div id="tagFoldBody">
+        <input id="tags" placeholder="#AKB48" style="margin-top:10px" />
+        <div class="chips" id="tagPresets"></div>
+        <div class="hint">タップで追加 / もう一度で削除。自分用プリセットも保存できます。</div>
+        <div class="row">
+          <input id="customTag" placeholder="#自分用タグ" style="flex:1; min-width:160px" />
+          <button class="btn-ghost" id="addTagPreset">プリセット追加</button>
+          <button class="btn-ghost" id="clearTagPreset">プリセット全削除</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <label>セトリ（1枠 = 1曲）</label>
+      <div id="songRows"></div>
+      <div class="row">
+        <button class="btn-main" id="addSong">＋ 枠を追加</button>
+        <button class="btn-ghost" id="addMc">＋ MC</button>
+        <button class="btn-ghost" id="addEn">＋ EN</button>
+      </div>
+      <div class="hint">▼ を押すとセンター以外のメンバー欄が開きます。センターは最大3人です。＋ を押すとその下に1枠追加できます（途中への挿入もOK）。</div>
+    </section>
+
+    <section class="card">
+      <label>フォーマット</label>
+      <div class="chips" id="formats">
+        <button class="chip active" data-fmt="detail">詳細（M番号）</button>
+        <button class="chip" data-fmt="simple">シンプル番号</button>
+        <button class="chip" data-fmt="plain">曲名だけ</button>
+        <button class="chip" data-fmt="tweet">投稿向け</button>
+      </div>
+      <div class="row">
+        <button class="chip active" id="incMc" data-on="1">MCを残す</button>
+        <button class="chip active" id="incOverture" data-on="1">overtureを残す</button>
+        <button class="chip active" id="incCenter" data-on="1">☆センターを残す</button>
+        <button class="chip" id="autoSplit" data-on="0">長い時は2投稿に分割</button>
+      </div>
+      <div class="hint">分割の目安は約400文字。MCの前後でできるだけ自然に分けます。</div>
+    </section>
+
+    <section class="card">
+      <label>プレビュー</label>
+      <div id="previewWrap"></div>
+      <div class="row">
+        <button class="btn-main" id="copyImg">画像でコピー（太字が残る）</button>
+        <button class="btn-ghost" id="saveImg">画像を保存</button>
+        <button class="btn-ghost" id="copyAll">テキストコピー</button>
+        <button class="btn-ghost" id="clearBtn">クリア</button>
+      </div>
+      <div class="hint">Xに貼るなら「画像でコピー」を使ってください。文字だけコピーすると、X側で太字は消えます。</div>
+      <canvas id="setCanvas" style="display:none"></canvas>
+    </section>
+  </div>
+  <div class="toast" id="toast">コピーしました</div>
+
+  <script src="members.js"></script>
+  <script src="songs.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const LS = "setlist-app-v2";
+    let fmt = "detail";
+    let slot = "昼公演";
+
+    const DEFAULT_TAGS = ["#AKB48", "#NMB48", "#推し活", "#セトリ", "#握手会"];
+    const DEFAULT_OSHI = ["山﨑空", "正鋳真優", "山口結愛"];
+
+    const state = Object.assign({
+      group: "AKB48",
+      tags: "#AKB48",
+      oshi: "山﨑空, 正鋳真優, 山口結愛",
+      customTags: [],
+      customOshi: [],
+      tagPresets: null,
+      oshiPresets: null,
+      cast: ["ALL"],
+      songs: null,
+      foldOshi: false,
+      foldTag: false,
+      foldCast: false
+    }, JSON.parse(localStorage.getItem(LS) || "{}"));
+    if (!Array.isArray(state.cast)) state.cast = [];
+    if (state.cast.length === 0) state.cast = ["ALL"];
+    if (!state.tagPresets) state.tagPresets = [...new Set([...DEFAULT_TAGS, ...(state.customTags || [])])];
+    if (!state.oshiPresets) state.oshiPresets = [...new Set([...DEFAULT_OSHI, ...(state.customOshi || [])])];
+    state.oshiPresets = state.oshiPresets.filter(n => n !== "廣澤希空" && n !== "広澤希空");
+    state.oshi = (state.oshi || "").split(/[,\s、]+/).filter(n => n && n !== "廣澤希空" && n !== "広澤希空").join(", ");
+
+    const pad = (n) => String(n).padStart(2, "0");
+    const today = new Date();
+    $("date").value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+    $("group").value = state.group || "";
+    $("tags").value = state.tags || "";
+    $("oshi").value = state.oshi || "";
+
+    function save() {
+      localStorage.setItem(LS, JSON.stringify({
+        group: $("group").value,
+        tags: $("tags").value,
+        oshi: $("oshi").value,
+        customTags: state.customTags,
+        customOshi: state.customOshi,
+        tagPresets: state.tagPresets,
+        oshiPresets: state.oshiPresets,
+        cast: state.cast,
+        songs,
+        foldOshi: state.foldOshi,
+        foldTag: state.foldTag,
+        foldCast: state.foldCast
+      }));
+    }
+
+    function applyFolds() {
+      $("oshiFoldBody").style.display = state.foldOshi ? "block" : "none";
+      $("oshiFoldArrow").textContent = state.foldOshi ? "▲" : "▼";
+      $("tagFoldBody").style.display = state.foldTag ? "block" : "none";
+      $("tagFoldArrow").textContent = state.foldTag ? "▲" : "▼";
+      $("castFoldBody").style.display = state.foldCast ? "block" : "none";
+      $("castFoldArrow").textContent = state.foldCast ? "▲" : "▼";
+    }
+    $("oshiFoldHead").onclick = () => { state.foldOshi = !state.foldOshi; applyFolds(); save(); };
+    $("tagFoldHead").onclick = () => { state.foldTag = !state.foldTag; applyFolds(); save(); };
+    $("castFoldHead").onclick = () => { state.foldCast = !state.foldCast; applyFolds(); save(); };
+    applyFolds();
+
+    function toast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    }
+
+    function toggleOn(el) {
+      const on = el.dataset.on !== "1";
+      el.dataset.on = on ? "1" : "0";
+      el.classList.toggle("active", on);
+      render();
+    }
+    ["incMc","incOverture","incCenter","autoSplit"].forEach(id => {
+      $(id).onclick = () => toggleOn($(id));
+    });
+
+    document.querySelectorAll("#formats .chip").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll("#formats .chip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        fmt = btn.dataset.fmt;
+        render();
+      };
+    });
+
+    function setSlot(value) {
+      slot = value;
+      ["slotNone","slotDay","slotNight"].forEach(id => {
+        $(id).classList.toggle("active", $(id).dataset.slot === value);
+      });
+      render();
+    }
+    $("slotNone").onclick = () => setSlot("");
+    $("slotDay").onclick = () => setSlot("昼公演");
+    $("slotNight").onclick = () => setSlot("夜公演");
+
+    function currentTags() {
+      return $("tags").value.split(/\s+/).filter(Boolean);
+    }
+    function setTags(list) {
+      $("tags").value = [...new Set(list)].join(" ");
+      save(); render();
+    }
+    function makePresetChip(label, active, onToggle, onRemove) {
+      const b = document.createElement("button");
+      b.className = "chip" + (active ? " active" : "");
+      b.type = "button";
+      const name = document.createElement("span");
+      name.textContent = label;
+      const x = document.createElement("span");
+      x.textContent = " ×";
+      x.style.opacity = "0.7";
+      x.onclick = (e) => { e.stopPropagation(); onRemove(); };
+      b.appendChild(name);
+      b.appendChild(x);
+      b.onclick = () => onToggle();
+      return b;
+    }
+    function renderTagPresets() {
+      const box = $("tagPresets");
+      box.innerHTML = "";
+      const selected = currentTags();
+      state.tagPresets.forEach(tag => {
+        box.appendChild(makePresetChip(tag, selected.includes(tag), () => {
+          const now = currentTags();
+          if (now.includes(tag)) setTags(now.filter(t => t !== tag));
+          else setTags([...now, tag]);
+        }, () => {
+          state.tagPresets = state.tagPresets.filter(t => t !== tag);
+          setTags(currentTags().filter(t => t !== tag));
+        }));
+      });
+    }
+    $("addTagPreset").onclick = () => {
+      let v = $("customTag").value.trim();
+      if (!v) return;
+      if (!v.startsWith("#")) v = "#" + v;
+      state.tagPresets = [...new Set([...state.tagPresets, v])];
+      setTags([...currentTags(), v]);
+      $("customTag").value = "";
+    };
+    $("clearTagPreset").onclick = () => {
+      state.tagPresets = [];
+      $("tags").value = "";
+      save(); render();
+    };
+
+    function renderOshiPresets() {
+      const box = $("oshiPresets");
+      box.innerHTML = "";
+      const selected = $("oshi").value.split(/[,\s、]+/).filter(Boolean);
+      state.oshiPresets.forEach(name => {
+        box.appendChild(makePresetChip(name, selected.includes(name), () => {
+          const now = $("oshi").value.split(/[,\s、]+/).filter(Boolean);
+          const next = now.includes(name) ? now.filter(n => n !== name) : [...now, name];
+          $("oshi").value = next.join(", ");
+          save(); render();
+        }, () => {
+          state.oshiPresets = state.oshiPresets.filter(n => n !== name);
+          $("oshi").value = selected.filter(n => n !== name).join(", ");
+          save(); render();
+        }));
+      });
+    }
+    $("addOshiPreset").onclick = () => {
+      const v = $("customOshi").value.trim().replace(/^[#＃]/, "");
+      if (!v) return;
+      state.oshiPresets = [...new Set([...(state.oshiPresets || []), v])];
+      const now = $("oshi").value.split(/[,\s、]+/).filter(Boolean);
+      if (!now.includes(v)) $("oshi").value = [...now, v].join(", ");
+      $("customOshi").value = "";
+      save();
+      render();
+    };
+    $("clearOshiPreset").onclick = () => {
+      state.oshiPresets = [];
+      $("oshi").value = "";
+      save(); render();
+    };
+
+    function formatDate(iso) {
+      if (!iso) return "";
+      const [y,m,d] = iso.split("-");
+      const dt = new Date(Number(y), Number(m)-1, Number(d));
+      return `${y}.${Number(m)}.${Number(d)} (${"日月火水木金土"[dt.getDay()]})`;
+    }
+
+    function renderCast() {
+      const box = $("castPresets");
+      if (!box) return;
+      box.innerHTML = "";
+      state.cast.forEach((name, i) => {
+        const b = document.createElement("button");
+        b.className = "chip active";
+        b.type = "button";
+        const span = document.createElement("span");
+        span.textContent = name;
+        const x = document.createElement("span");
+        x.textContent = " ×";
+        x.onclick = (e) => {
+          e.stopPropagation();
+          state.cast.splice(i, 1);
+          save(); renderCast(); renderSongRows(); renderPreview(); renderMemberPresetSelect();
+        };
+        b.appendChild(span);
+        b.appendChild(x);
+        box.appendChild(b);
+      });
+    }
+    function addCastName(raw) {
+      const v = (raw || "").trim();
+      if (!v) return;
+      state.cast = [...new Set([...state.cast, v])];
+      save();
+      renderCast();
+      renderSongRows();
+      renderPreview();
+      if (typeof renderMemberPresetSelect === "function") renderMemberPresetSelect();
+    }
+    $("addCast").onclick = () => {
+      addCastName($("castInput").value);
+      $("castInput").value = "";
+    };
+    $("castInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addCastName($("castInput").value);
+        $("castInput").value = "";
+      }
+    });
+    $("clearCast").onclick = () => {
+      state.cast = ["ALL"];
+      save(); renderCast(); renderSongRows(); renderPreview(); renderMemberPresetSelect();
+    };
+
+    // ---- members.js から読み込んだ一覧をプルダウンで選んで追加 ----
+    function getPresetGroupKeys() {
+      return Object.keys(window.MEMBER_PRESETS || {});
+    }
+    function guessPresetGroupKey() {
+      const g = ($("group").value || "").trim();
+      const keys = getPresetGroupKeys();
+      if (!g) return keys[0] || "";
+      if (keys.includes(g)) return g;
+      const hit = keys.find(k => g.includes(k) || k.includes(g));
+      return hit || keys[0] || "";
+    }
+    function currentPresetGroupData() {
+      const key = $("memberPresetGroup") ? $("memberPresetGroup").value : "";
+      return (window.MEMBER_PRESETS && window.MEMBER_PRESETS[key]) || {};
+    }
+    function renderMemberPresetGroupSelect(preferKey) {
+      const sel = $("memberPresetGroup");
+      if (!sel) return;
+      const keys = getPresetGroupKeys();
+      sel.innerHTML = "";
+      if (!keys.length) {
+        const o = document.createElement("option");
+        o.value = ""; o.textContent = "members.js未検出";
+        sel.appendChild(o);
+        return;
+      }
+      const current = preferKey && keys.includes(preferKey) ? preferKey : guessPresetGroupKey();
+      keys.forEach(k => {
+        const o = document.createElement("option");
+        o.value = k; o.textContent = k;
+        if (k === current) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+    function renderMemberPresetGenSelect() {
+      const sel = $("memberPresetGen");
+      if (!sel) return;
+      const data = currentPresetGroupData();
+      const genKeys = Object.keys(data);
+      const prev = sel.value;
+      sel.innerHTML = "";
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = "選択しない";
+      sel.appendChild(blank);
+      if (!genKeys.length) return;
+      genKeys.forEach(gen => {
+        const o = document.createElement("option");
+        o.value = gen; o.textContent = gen;
+        if (gen === prev) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+    function renderMemberPresetSelect() {
+      const sel = $("memberPresetSelect");
+      const genSel = $("memberPresetGen");
+      if (!sel || !genSel) return;
+      const data = currentPresetGroupData();
+      const list = genSel.value ? (data[genSel.value] || []) : Object.values(data).flat();
+      sel.innerHTML = "";
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = list.length ? "選択してください" : "（このグループ・期の一覧は空です）";
+      sel.appendChild(blank);
+      list.forEach(name => {
+        const o = document.createElement("option");
+        o.value = name;
+        o.textContent = state.cast.includes(name) ? `${name}（追加済み）` : name;
+        sel.appendChild(o);
+      });
+    }
+    function addCastNames(names) {
+      const uniq = [...new Set(names.filter(Boolean))];
+      if (!uniq.length) return;
+      state.cast = [...new Set([...state.cast, ...uniq])];
+      save();
+      renderCast();
+      renderSongRows();
+      renderPreview();
+      renderMemberPresetSelect();
+    }
+    if ($("memberPresetGroup")) {
+      $("memberPresetGroup").addEventListener("change", () => {
+        renderMemberPresetGenSelect();
+        renderMemberPresetSelect();
+      });
+    }
+    if ($("memberPresetGen")) {
+      $("memberPresetGen").addEventListener("change", renderMemberPresetSelect);
+    }
+    if ($("addCastFromPreset")) {
+      $("addCastFromPreset").onclick = () => {
+        const v = $("memberPresetSelect").value;
+        if (!v) return;
+        addCastNames([v]);
+      };
+    }
+    if ($("addGenAll")) {
+      $("addGenAll").onclick = () => {
+        const data = currentPresetGroupData();
+        const gen = $("memberPresetGen") ? $("memberPresetGen").value : "";
+        if (!gen) { alert("期を選択してください（「選択しない」のままではこのボタンは使えません。グループ全員を追加したい場合は「グループを全員追加」を使ってください）"); return; }
+        const list = data[gen] || [];
+        if (!list.length) return;
+        if (!confirm(`「${gen}」の${list.length}名をまとめて追加しますか？`)) return;
+        addCastNames(list);
+      };
+    }
+    if ($("addGroupAll")) {
+      $("addGroupAll").onclick = () => {
+        const data = currentPresetGroupData();
+        const groupName = $("memberPresetGroup") ? $("memberPresetGroup").value : "";
+        const all = Object.values(data).flat();
+        if (!all.length) return;
+        if (!confirm(`「${groupName}」全${all.length}名をまとめて追加しますか？`)) return;
+        addCastNames(all);
+      };
+    }
+    $("group").addEventListener("input", () => {
+      renderMemberPresetGroupSelect();
+      renderMemberPresetGenSelect();
+      renderMemberPresetSelect();
+    });
+    renderMemberPresetGroupSelect();
+    renderMemberPresetGenSelect();
+    renderMemberPresetSelect();
+
+    function fillMemberSelect(sel, current, blankLabel) {
+      sel.innerHTML = "";
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = blankLabel;
+      sel.appendChild(blank);
+      const names = [...state.cast];
+      if (current && !names.includes(current)) names.unshift(current);
+      names.forEach(n => {
+        const o = document.createElement("option");
+        o.value = n;
+        o.textContent = n;
+        if (n === current) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+
+    function emptySong(type = "song", title = "") {
+      return { type, title, centers: ["","",""], members: "", open: false };
+    }
+    let songs = Array.isArray(state.songs) && state.songs.length
+      ? state.songs.map(s => ({
+          type: s.type || "song",
+          title: s.title || "",
+          centers: Array.isArray(s.centers) ? [s.centers[0]||"", s.centers[1]||"", s.centers[2]||""] : ["","",""],
+          members: typeof s.members === "string" ? s.members : "",
+          open: !!s.open
+        }))
+      : [emptySong("overture", "overture"), emptySong("song", "")];
+
+    function renderSongRows() {
+      const box = $("songRows");
+      box.innerHTML = "";
+      songs.forEach((song, i) => {
+        if (!Array.isArray(song.centers)) song.centers = ["","",""];
+        if (Array.isArray(song.members)) song.members = song.members.filter(Boolean).join(" ");
+        if (typeof song.members !== "string") song.members = "";
+        const block = document.createElement("div");
+        block.className = "song-block";
+        const row = document.createElement("div");
+        row.className = "song-row";
+        const sel = document.createElement("select");
+        [["song","曲"],["mc","MC"],["overture","OV"],["en","EN"]].forEach(([v,l]) => {
+          const o = document.createElement("option");
+          o.value = v; o.textContent = l;
+          if (song.type === v) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.onchange = () => { songs[i].type = sel.value; renderSongRows(); renderPreview(); };
+        const title = document.createElement("input");
+        title.placeholder = song.type === "mc" ? "MC" : "曲名（文字を入れると候補表示）";
+        title.value = song.title;
+        title.oninput = () => { songs[i].title = title.value; renderPreview(); };
+        const titleWrap = document.createElement("div");
+        titleWrap.className = "ac-wrap";
+        const acList = document.createElement("div");
+        acList.className = "ac-list";
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(acList);
+        setupSongAutocomplete(title, acList, i);
+        const centersWrap = document.createElement("div");
+        centersWrap.className = "centers";
+        for (let c = 0; c < 3; c++) {
+          const center = document.createElement("select");
+          fillMemberSelect(center, song.centers[c] || "", `C${c+1}`);
+          center.onchange = () => { songs[i].centers[c] = center.value; renderPreview(); };
+          centersWrap.appendChild(center);
+        }
+        const tog = document.createElement("button");
+        tog.className = "del-row";
+        tog.type = "button";
+        tog.textContent = song.open ? "▲" : "▼";
+        tog.title = "メンバー欄";
+        tog.onclick = () => {
+          songs[i].open = !songs[i].open;
+          renderSongRows();
+          renderPreview();
+        };
+        const del = document.createElement("button");
+        del.className = "del-row";
+        del.type = "button";
+        del.textContent = "−";
+        del.onclick = () => {
+          if (songs.length === 1) songs[0] = emptySong();
+          else songs.splice(i, 1);
+          renderSongRows();
+          renderPreview();
+        };
+        const ins = document.createElement("button");
+        ins.className = "del-row";
+        ins.type = "button";
+        ins.textContent = "+";
+        ins.title = "この下に1枠追加";
+        ins.onclick = () => {
+          songs.splice(i + 1, 0, emptySong("song"));
+          renderSongRows();
+          renderPreview();
+        };
+        row.appendChild(sel);
+        row.appendChild(titleWrap);
+        row.appendChild(centersWrap);
+        row.appendChild(tog);
+        row.appendChild(del);
+        row.appendChild(ins);
+        block.appendChild(row);
+        if (song.open) {
+          const box2 = document.createElement("div");
+          box2.className = "member-box";
+          const lab = document.createElement("div");
+          lab.className = "hint";
+          lab.textContent = "センター以外のメンバー（1枠）";
+          lab.style.marginTop = "0";
+          box2.appendChild(lab);
+          const inp = document.createElement("input");
+          inp.placeholder = "例: 小栗有以 千葉恵里";
+          inp.value = song.members || "";
+          inp.style.marginTop = "6px";
+          inp.oninput = () => { songs[i].members = inp.value; renderPreview(); };
+          const pick = document.createElement("select");
+          fillMemberSelect(pick, "", "メンバーを追加");
+          pick.onchange = () => {
+            if (!pick.value) return;
+            const now = (songs[i].members || "").split(/[,\s、]+/).filter(Boolean);
+            if (!now.includes(pick.value)) now.push(pick.value);
+            songs[i].members = now.join(" ");
+            pick.value = "";
+            inp.value = songs[i].members;
+            renderPreview();
+          };
+          box2.appendChild(pick);
+          box2.appendChild(inp);
+          block.appendChild(box2);
+        }
+        box.appendChild(block);
+      });
+    }
+    // ---- songs.js から読み込んだ一覧を、入力文字を含む候補として表示（グループ問わず全曲対象） ----
+    function allSongTitles() {
+      const data = window.SONG_PRESETS || {};
+      const all = Object.values(data).flatMap(group => Object.values(group || {}).flat());
+      return [...new Set(all)];
+    }
+    function setupSongAutocomplete(input, listEl, i) {
+      function refresh() {
+        const q = input.value.trim();
+        const all = allSongTitles();
+        listEl.innerHTML = "";
+        if (!q) { listEl.classList.remove("show"); return; }
+        const ql = q.toLowerCase();
+        const matches = all.filter(t => t.toLowerCase().includes(ql)).slice(0, 8);
+        if (!matches.length) { listEl.classList.remove("show"); return; }
+        matches.forEach(t => {
+          const item = document.createElement("div");
+          item.className = "ac-item";
+          item.textContent = t;
+          item.onmousedown = (e) => {
+            e.preventDefault();
+            input.value = t;
+            songs[i].title = t;
+            listEl.classList.remove("show");
+            renderPreview();
+          };
+          listEl.appendChild(item);
+        });
+        listEl.classList.add("show");
+      }
+      input.addEventListener("input", refresh);
+      input.addEventListener("focus", refresh);
+      input.addEventListener("blur", () => setTimeout(() => listEl.classList.remove("show"), 150));
+    }
+
+    $("addSong").onclick = () => { songs.push(emptySong("song")); renderSongRows(); renderPreview(); };
+    $("addMc").onclick = () => { songs.push(emptySong("mc", "MC")); renderSongRows(); renderPreview(); };
+    $("addEn").onclick = () => { songs.push(emptySong("en")); renderSongRows(); renderPreview(); };
+    function variantsOf(name) {
+      const base = name.replace(/[ちゃんさん]/g, "").trim();
+      const list = [base];
+      const swaps = [
+        [/﨑/g, "崎"], [/崎/g, "﨑"],
+        [/廣/g, "広"], [/広/g, "廣"],
+        [/髙/g, "高"], [/高/g, "髙"],
+        [/濱/g, "浜"], [/浜/g, "濱"]
+      ];
+      swaps.forEach(([a,b]) => list.push(base.replace(a, b)));
+      if (base.length >= 3) {
+        list.push(base.slice(0, 2));
+        const given = base.slice(2);
+        if (given.length >= 2) list.push(given);
+      }
+      return [...new Set(list.filter(Boolean))].sort((a,b) => b.length - a.length);
+    }
+    function escRe(s) {
+      return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    function emphasize(text, names) {
+      if (!text || !names.length) return text;
+      const keys = [];
+      names.forEach(full => {
+        variantsOf(full).forEach(v => {
+          if (v.length >= 2) keys.push(v);
+        });
+        const given1 = full.replace(/[ちゃんさん]/g, "").slice(2);
+        if (given1.length === 1) keys.push(given1);
+      });
+      const uniq = [...new Set(keys)].sort((a,b) => b.length - a.length);
+      const held = [];
+      let out = text;
+      uniq.forEach(key => {
+        const re = key.length === 1
+          ? new RegExp(`([☆･・\\s])(${escRe(key)})(?![\\w一-龯])`, "g")
+          : new RegExp(escRe(key), "g");
+        out = out.replace(re, (...args) => {
+          const m = key.length === 1 ? args[2] : args[0];
+          const prefix = key.length === 1 ? args[1] : "";
+          held.push(m);
+          return `${prefix}\u0000${held.length - 1}\u0000`;
+        });
+      });
+      return out.replace(/\u0000(\d+)\u0000/g, (_, i) => `«${held[Number(i)]}»`);
+    }
+    function cleanSong(line, keepCenter, names) {
+      let s = emphasize(line, names);
+      s = s.replace(/^M0?\d+[\.．、:\s　]*/i, "").replace(/^0?\d+[\.．、:\s　]+/, "").trim();
+      if (!keepCenter) {
+        const marked = (s.match(/«[^»]+»/g) || []).join(" ");
+        s = s.replace(/[☆]\s*[^／/]+$/, "").trim();
+        if (marked && !/«/.test(s)) s = `${s} ${marked}`.trim();
+      }
+      return s;
+    }
+
+    function buildBody() {
+      const keepMc = $("incMc").dataset.on === "1";
+      const keepOv = $("incOverture").dataset.on === "1";
+      const keepCenter = $("incCenter").dataset.on === "1";
+      const names = $("oshi").value.split(/[,\s、]+/).filter(Boolean);
+      const items = songs.filter(it => {
+        if (it.type === "mc" && !keepMc) return false;
+        if (it.type === "overture" && !keepOv) return false;
+        return (it.title || "").trim() || it.type === "mc" || it.type === "overture";
+      });
+      const lines = [];
+      let songNo = 0, enNo = 0;
+      items.forEach(it => {
+        const centerNames = (it.centers || []).map(s => (s || "").trim()).filter(Boolean).slice(0, 3);
+        const otherMembers = String(it.members || "").split(/[,\s、]+/).filter(Boolean);
+        const people = [];
+        if (keepCenter) centerNames.forEach(n => people.push(n === "ALL" ? n : `☆${n}`));
+        otherMembers.forEach(n => {
+          if (!centerNames.includes(n)) people.push(n);
+        });
+        const titleText = (it.title || "").trim();
+        const rawLine = people.length ? `${titleText} （${people.join(" ")}）` : titleText;
+        if (it.type === "mc") { lines.push({ kind: "mc", text: titleText || "MC" }); return; }
+        if (it.type === "overture") {
+          const base = titleText || "overture";
+          const t = fmt === "detail" ? `M0  ${base}` : fmt === "simple" ? `0. ${base}` : base;
+          lines.push({ kind: "ov", text: t });
+          return;
+        }
+        const withMembers = emphasize(rawLine, names);
+        if (it.type === "en") {
+          enNo += 1;
+          const t = fmt === "plain" ? withMembers : `EN${enNo}${fmt === "simple" ? "." : ""}  ${withMembers}`;
+          lines.push({ kind: "en", text: t });
+          return;
+        }
+        songNo += 1;
+        let t = withMembers;
+        if (fmt === "detail") t = `M${songNo}  ${withMembers}`;
+        if (fmt === "simple" || fmt === "tweet") t = `${songNo}. ${withMembers}`;
+        lines.push({ kind: "song", text: t });
+      });
+      return lines;
+    }
+
+    function headerLines() {
+      const h = [];
+      const date = formatDate($("date").value);
+      const group = $("group").value.trim();
+      let title = $("title").value.trim();
+      if (slot) title = title ? `${title} ${slot}` : slot;
+      const venue = $("venue").value.trim();
+      if (date) h.push(date);
+      if (group && title) h.push(`${group} ${title}`);
+      else if (group || title) h.push(group || title);
+      if (venue) h.push(`会場 ${venue}`);
+      return h;
+    }
+
+    function joinPost(header, bodyLines, tags, partLabel) {
+      const parts = [];
+      if (partLabel) parts.push(partLabel);
+      if (header.length) parts.push(header.join("\n"));
+      if (bodyLines.length) parts.push(bodyLines.join("\n"));
+      if (tags) parts.push(tags);
+      return parts.join("\n\n");
+    }
+
+    function splitPosts(header, body, tags) {
+      const wantSplit = $("autoSplit").dataset.on === "1";
+      const full = joinPost(header, body.map(x => x.text), tags, "");
+      if (!wantSplit || full.length <= 400 || body.length < 8) return [full];
+
+      let cut = Math.ceil(body.length / 2);
+      const mcIdx = body.findIndex((x, i) => i > 2 && x.kind === "mc");
+      if (mcIdx > 2 && mcIdx < body.length - 3) cut = mcIdx;
+      const a = body.slice(0, cut).map(x => x.text);
+      const b = body.slice(cut).map(x => x.text);
+      return [
+        joinPost(header, a, tags, "①/2"),
+        joinPost(header, b, tags, "②/2")
+      ];
+    }
+
+    function renderPreview() {
+      const header = headerLines();
+      const body = buildBody();
+      const tags = $("tags").value.trim();
+      const posts = splitPosts(header, body, tags);
+      const wrap = $("previewWrap");
+      wrap.innerHTML = "";
+      posts.forEach((text, i) => {
+        if (posts.length > 1) {
+          const lab = document.createElement("div");
+          lab.className = "part-label";
+          lab.textContent = i === 0 ? `投稿1（${text.length}文字）` : `投稿2（${text.length}文字）`;
+          wrap.appendChild(lab);
+        }
+        const pre = document.createElement("div");
+        pre.className = "preview";
+        if (!text) {
+          pre.textContent = "ここに整形結果が出ます";
+        } else {
+          pre.innerHTML = text
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\n/g, "<br>")
+            .replace(/«([^»]+)»/g, '<span class="hit">$1</span>');
+        }
+        wrap.appendChild(pre);
+        if (posts.length > 1) {
+          const row = document.createElement("div");
+          row.className = "row";
+          const btn = document.createElement("button");
+          btn.className = "btn-ghost";
+          btn.textContent = `投稿${i+1}をコピー`;
+          btn.onclick = () => copyText(text, `投稿${i+1}をコピーしました`);
+          row.appendChild(btn);
+          wrap.appendChild(row);
+        }
+      });
+      if (posts.length > 1) {
+        const note = document.createElement("div");
+        note.className = "split-note";
+        note.textContent = "長いセトリを2投稿に分けました。①→②の順で投稿してください。";
+        wrap.appendChild(note);
+      } else {
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.innerHTML = `<span>${plainText(posts[0]||"").length}文字</span><span>そのままXに貼れます</span>`;
+        wrap.appendChild(meta);
+      }
+      const hits = (posts.join("\n").match(/«[^»]+»/g) || []).length;
+      $("oshiHit").textContent = $("oshi").value.trim()
+        ? (hits ? `推しヒット ${hits}箇所` : "セトリ内に推しの名前が見つかりません。フルネームか、セトリに書いてある表記を入れてください")
+        : "推しメンバーを入れると、ヒット件数がここに出ます";
+      renderTagPresets();
+      renderOshiPresets();
+      save();
+    }
+    function render() {
+      renderCast();
+      renderSongRows();
+      renderPreview();
+    }
+
+    function plainText(text) {
+      return text.replace(/«([^»]+)»/g, "$1");
+    }
+    function currentPosts() {
+      return splitPosts(headerLines(), buildBody(), $("tags").value.trim());
+    }
+    function tokenize(line) {
+      const parts = [];
+      const re = /«([^»]+)»/g;
+      let last = 0, m;
+      while ((m = re.exec(line))) {
+        if (m.index > last) parts.push({ text: line.slice(last, m.index), hit: false });
+        parts.push({ text: m[1], hit: true });
+        last = m.index + m[0].length;
+      }
+      if (last < line.length) parts.push({ text: line.slice(last), hit: false });
+      return parts;
+    }
+    function wrapCanvasText(ctx, text, maxW) {
+      if (!text) return [];
+      const chars = [...text];
+      const lines = [];
+      let cur = "";
+      chars.forEach(ch => {
+        const next = cur + ch;
+        if (ctx.measureText(next).width > maxW && cur) {
+          lines.push(cur);
+          cur = ch;
+        } else cur = next;
+      });
+      if (cur) lines.push(cur);
+      return lines;
+    }
+    function posterItems() {
+      const keepMc = $("incMc").dataset.on === "1";
+      const keepOv = $("incOverture").dataset.on === "1";
+      const keepCenter = $("incCenter").dataset.on === "1";
+      const items = [];
+      let songNo = 0, enNo = 0;
+      songs.forEach(it => {
+        if (it.type === "mc" && !keepMc) return;
+        if (it.type === "overture" && !keepOv) return;
+        const title = (it.title || "").trim();
+        if (!title && it.type !== "mc" && it.type !== "overture") return;
+        const centers = (it.centers || []).map(s => (s || "").trim()).filter(Boolean).slice(0, 3);
+        const others = String(it.members || "").split(/[,\s、]+/).filter(Boolean)
+          .filter(n => !centers.includes(n));
+        const people = [];
+        if (keepCenter) centers.forEach(n => people.push(n === "ALL" ? n : `☆${n}`));
+        others.forEach(n => people.push(n));
+        if (it.type === "mc") {
+          items.push({ label: "", title: title || "MC", people: "", kind: "mc" });
+          return;
+        }
+        if (it.type === "overture") {
+          items.push({ label: "", title: title || "overture", people: "", kind: "ov" });
+          return;
+        }
+        if (it.type === "en") {
+          enNo += 1;
+          items.push({ label: `EN${enNo}`, title, people: people.join(" "), kind: "en" });
+          return;
+        }
+        songNo += 1;
+        items.push({ label: `M${songNo}`, title, people: people.join(" "), kind: "song" });
+      });
+      return items;
+    }
+    function drawSetlistImage() {
+      const canvas = $("setCanvas");
+      const ctx = canvas.getContext("2d");
+      const width = 1600;
+      const padX = 64;
+      const items = posterItems();
+      const cols = items.length > 6 ? 2 : 1;
+      const gap = 56;
+      const colW = (width - padX * 2 - gap * (cols - 1)) / cols;
+      const serif = "'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif";
+      const sans = "'Hiragino Sans', 'Noto Sans JP', sans-serif";
+      const measured = items.map(it => {
+        const title = `${it.label ? it.label + "  " : ""}${it.title}`;
+        ctx.font = `700 26px ${serif}`;
+        const tLines = wrapCanvasText(ctx, title, colW - 8);
+        ctx.font = `400 16px ${sans}`;
+        const pLines = wrapCanvasText(ctx, it.people, colW - 8);
+        const h = tLines.length * 32 + pLines.length * 22 + 22;
+        return { ...it, tLines, pLines, h };
+      });
+
+      // ---- ヘッダー内容を先に計測し、必要な高さを動的に決める ----
+      const group = $("group").value.trim() || "SETLIST";
+      const title = [$("title").value.trim(), slot].filter(Boolean).join(" ");
+      ctx.font = `700 28px ${serif}`;
+      const titleLines = wrapCanvasText(ctx, title || "コンサートセトリ", width - 160);
+      const sub = [formatDate($("date").value), $("venue").value.trim()].filter(Boolean).join("  ");
+
+      const groupY = 96;
+      const subLabelY = groupY + 26;
+      const titleStartY = subLabelY + 42;
+      const titleLineH = 34;
+      const titleEndY = titleStartY + (titleLines.length - 1) * titleLineH;
+      const subY = sub ? titleEndY + 44 : titleEndY;
+      const dividerY = subY + (sub ? 24 : 30);
+      const headerH = dividerY + 46;
+
+      const colItems = Array.from({ length: cols }, () => []);
+      const per = Math.ceil(measured.length / cols) || 1;
+      measured.forEach((it, i) => {
+        colItems[Math.min(cols - 1, Math.floor(i / per))].push(it);
+      });
+      const colH = colItems.map(list => list.reduce((s, it) => s + it.h, 0));
+      const bodyH = Math.max(420, ...colH) + 40;
+      const height = headerH + bodyH + 70;
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.fillStyle = "#f6efe3";
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = "#d4b483";
+      ctx.lineWidth = 10;
+      ctx.strokeRect(18, 18, width - 36, height - 36);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(28, 28, width - 56, height - 56);
+
+      ctx.strokeStyle = "#c9a56a";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(70, 48);
+      ctx.lineTo(width - 70, 48);
+      ctx.moveTo(90, 54);
+      ctx.lineTo(width - 90, 54);
+      ctx.stroke();
+
+      ctx.fillStyle = "#8a6a3b";
+      ctx.textAlign = "center";
+      ctx.font = `800 54px ${serif}`;
+      ctx.fillText(group, width / 2, groupY);
+      ctx.font = `400 15px ${sans}`;
+      ctx.fillStyle = "#b08a4d";
+      ctx.fillText("OFFICIAL STYLE SETLIST", width / 2, subLabelY);
+
+      ctx.fillStyle = "#6d542e";
+      ctx.font = `700 28px ${serif}`;
+      titleLines.forEach((ln, i) => {
+        ctx.fillText(ln, width / 2, titleStartY + i * titleLineH);
+      });
+      if (sub) {
+        ctx.fillStyle = "#b4232c";
+        ctx.font = `700 22px ${sans}`;
+        ctx.fillText(sub, width / 2, subY);
+      }
+
+      ctx.strokeStyle = "#d4b483";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(70, dividerY);
+      ctx.lineTo(width - 70, dividerY);
+      ctx.stroke();
+
+      ctx.textAlign = "left";
+      colItems.forEach((list, ci) => {
+        let y = headerH;
+        const x = padX + ci * (colW + gap);
+        list.forEach(it => {
+          ctx.fillStyle = "#b4232c";
+          ctx.font = `700 26px ${serif}`;
+          it.tLines.forEach((ln) => {
+            ctx.fillText(ln, x, y);
+            y += 32;
+          });
+          ctx.fillStyle = "#7a5a32";
+          ctx.font = `400 16px ${sans}`;
+          it.pLines.forEach(ln => {
+            ctx.fillText(ln, x, y);
+            y += 22;
+          });
+          y += 18;
+        });
+      });
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#c9a56a";
+      ctx.font = `400 14px ${sans}`;
+      ctx.fillText("Generated by セトリ投稿メーカー", width / 2, height - 38);
+      ctx.textAlign = "left";
+      return canvas;
+    }
+    async function canvasToBlob(canvas) {
+      return await new Promise(res => canvas.toBlob(res, "image/png"));
+    }
+    async function copyImage(text, msg) {
+      const canvas = drawSetlistImage();
+      const blob = await canvasToBlob(canvas);
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        toast(msg || "画像をコピーしました。Xに貼れます");
+      } catch {
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "setlist.png";
+        a.click();
+        toast("この端末は画像コピー非対応のため保存しました");
+      }
+    }
+    function saveImage() {
+      const canvas = drawSetlistImage();
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "setlist.png";
+      a.click();
+      toast("画像を保存しました");
+    }
+    async function copyText(text, msg) {
+      const out = plainText(text);
+      try { await navigator.clipboard.writeText(out); }
+      catch {
+        const ta = document.createElement("textarea");
+        ta.value = out; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); ta.remove();
+      }
+      toast(msg || "テキストをコピーしました（Xでは太字になりません）");
+    }
+
+    $("copyAll").onclick = () => {
+      const posts = currentPosts();
+      copyText(posts.join("\n\n-----\n\n"), posts.length > 1 ? "テキストをコピーしました" : "テキストをコピーしました（Xでは太字になりません）");
+    };
+    $("copyImg").onclick = () => copyImage(currentPosts().join("\n\n"));
+    $("saveImg").onclick = () => saveImage(currentPosts().join("\n\n"));
+    $("clearBtn").onclick = () => {
+      songs = [emptySong()];
+      $("title").value = "";
+      $("venue").value = "";
+      render();
+    };
+
+    ["date","group","title","venue","tags","oshi"].forEach(id => {
+      $(id).addEventListener("input", render);
+    });
+
+    render();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
