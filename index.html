@@ -1308,38 +1308,45 @@
       return /iP(hone|od|ad)/.test(navigator.userAgent) ||
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     }
-    // iOS Safariは <a download> でのプログラム的な保存に対応していないため、
-    // 1) 共有シート（そこから「画像を保存」）→ 2) iOSなら新しいタブで開いて長押し保存 →
-    // 3) それ以外（PC等）は通常のダウンロード、の順で確実な方法を選ぶ。
+    // 環境によって「共有」「ダウンロード」の挙動が変わり、
+    // 保存できたのかどうか分かりにくいため、
+    // 1) 共有シートがあればそれを試す（成功すればそこで終了）
+    // 2) ダメなら、ダウンロードを試みつつ、必ず新しいタブでも画像を開く
+    //    （ダウンロード自体は成功していても、保存先フォルダが分かりにくい機種があるため、
+    //    見える形の保険を必ず残す）
     async function shareOrOpenImage(blob, fallbackMsg) {
-      const file = new File([blob], "setlist.png", { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: "セトリ画像" });
-          toast("共有画面から保存できます");
-          return;
-        } catch (e) {
-          if (e && e.name === "AbortError") return; // ユーザーが共有をキャンセルしただけ
+      try {
+        const file = new File([blob], "setlist.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: "セトリ画像" });
+            toast("共有画面から保存できます");
+            return;
+          } catch (e) {
+            if (e && e.name === "AbortError") return; // ユーザーが共有をキャンセルしただけ
+          }
         }
-      }
-      const url = URL.createObjectURL(blob);
-      if (isIOS()) {
+        const url = URL.createObjectURL(blob);
+        if (!isIOS()) {
+          try {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "setlist.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          } catch {}
+        }
         window.open(url, "_blank");
-        toast(fallbackMsg || "新しいタブで画像を開きました。長押しして「写真に保存」してください");
-      } else {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "setlist.png";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        toast("画像を保存しました");
+        toast(fallbackMsg || "新しいタブで画像を開きました。見つからない場合は「ダウンロード」フォルダもご確認ください");
+      } catch (err) {
+        toast("画像の保存に失敗しました。もう一度お試しください");
       }
     }
     async function saveImage() {
       const canvas = drawSetlistImage();
       const blob = await canvasToBlob(canvas);
-      await shareOrOpenImage(blob, "新しいタブで画像を開きました。長押しして「写真に保存」してください");
+      await shareOrOpenImage(blob, "画像を保存/新しいタブで開きました。見つからない場合は「ダウンロード」フォルダもご確認ください");
     }
     async function copyText(text, msg) {
       const out = plainText(text);
