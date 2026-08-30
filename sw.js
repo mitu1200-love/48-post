@@ -1,7 +1,7 @@
 // キャッシュ名。ファイルの中身を大きく更新したときは、この数字を
 // 1つ上げてください（例: v1 → v2）。上げると古いキャッシュが破棄され、
 // 全ユーザーの端末で新しい内容に更新されます。
-const CACHE_NAME = "setlist-app-v10";
+const CACHE_NAME = "setlist-app-v11";
 
 const ASSETS = [
   "./",

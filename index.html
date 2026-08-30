@@ -1295,6 +1295,7 @@
       return await new Promise(res => canvas.toBlob(res, "image/png"));
     }
     async function copyImage(text, msg) {
+      warnIfInAppBrowser();
       const canvas = drawSetlistImage();
       const blob = await canvasToBlob(canvas);
       try {
@@ -1307,6 +1308,21 @@
     function isIOS() {
       return /iP(hone|od|ad)/.test(navigator.userAgent) ||
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+    // X(Twitter)・Instagram・LINEなどアプリ内の「埋め込みブラウザ」は、
+    // セキュリティ上の理由で共有/保存/クリップボード機能が制限されていることが多く、
+    // アプリ内からは回避できない。検知してブラウザで開き直すよう案内する。
+    function isInAppBrowser() {
+      const ua = navigator.userAgent || "";
+      return /Twitter|FBAN|FBAV|Instagram|Line\/|MicroMessenger|GSA\/|Snapchat/i.test(ua);
+    }
+    function warnIfInAppBrowser() {
+      if (!isInAppBrowser()) return false;
+      alert(
+        "X（Twitter）などアプリ内のブラウザでは、画像の保存・共有がうまく動かないことがあります。\n\n" +
+        "右上の「…」メニューなどから「ブラウザで開く」を選んで、ChromeやSafariで開き直してからお試しください。"
+      );
+      return true;
     }
     // 環境によって「共有」「ダウンロード」の挙動が変わり、
     // 保存できたのかどうか分かりにくいため、
@@ -1344,6 +1360,7 @@
       }
     }
     async function saveImage() {
+      warnIfInAppBrowser();
       const canvas = drawSetlistImage();
       const blob = await canvasToBlob(canvas);
       await shareOrOpenImage(blob, "画像を保存/新しいタブで開きました。見つからない場合は「ダウンロード」フォルダもご確認ください");
