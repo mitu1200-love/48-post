@@ -146,6 +146,12 @@
     }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    /* 出演メンバー欄など：文字数でselect/buttonが暴れないよう、確実に幅が収まるグリッドで組む */
+    .cast-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .cast-2col > * { min-width: 0; width: 100%; }
+    .cast-pick { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; align-items: center; }
+    .cast-pick select { min-width: 0; width: 100%; }
+    .cast-pick button { white-space: nowrap; }
     button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; font-size: 14px; cursor: pointer; }
     .btn-main { background: linear-gradient(90deg, var(--pink), var(--lavender)); color: #1a0514; flex: 1; min-width: 120px; }
     .btn-ghost { background: #2a1d32; color: var(--text); border: 1px solid var(--line); }
@@ -253,20 +259,22 @@
       </div>
       <div id="castFoldBody">
         <div class="chips" id="castPresets" style="margin-top:10px"></div>
-        <div class="row">
-          <select id="memberPresetGroup" style="flex:1; min-width:110px"></select>
-          <select id="memberPresetGen" style="flex:1; min-width:110px"></select>
+        <div class="row cast-2col">
+          <select id="memberPresetGroup"></select>
+          <select id="memberPresetGen"></select>
         </div>
-        <div class="row">
-          <select id="memberPresetSelect" style="flex:2; min-width:150px"></select>
+        <div class="row cast-pick">
+          <select id="memberPresetSelect"></select>
           <button class="btn-ghost" id="addCastFromPreset">追加</button>
         </div>
-        <div class="row">
+        <div class="row cast-2col">
           <button class="btn-ghost" id="addGroupAll">グループを全員追加</button>
           <button class="btn-ghost" id="addGenAll">この期を全員追加</button>
         </div>
         <div class="row">
-          <input id="castInput" placeholder="リストにない名前を直接入力" style="flex:1; min-width:160px" />
+          <input id="castInput" placeholder="リストにない名前を直接入力" />
+        </div>
+        <div class="row cast-2col">
           <button class="btn-ghost" id="addCast">追加</button>
           <button class="btn-ghost" id="clearCast">出演クリア</button>
         </div>
