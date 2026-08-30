@@ -109,15 +109,22 @@
       line-height: 1; display: flex; align-items: center; justify-content: center;
     }
     @media (max-width: 720px) {
-      .song-row .type-select { flex: 0 0 60px; width: 60px; font-size: 13px; padding-left: 6px; padding-right: 2px; }
-      .song-row .ac-wrap { flex: 1 1 90px; order: 2; }
-      .song-row .tog-btn { order: 3; flex: 0 0 34px; }
-      .song-row .ins-del-wrap { order: 4; flex: 0 0 24px; }
-      .song-row .ins-del-wrap .del-row { width: 24px; height: 14px; font-size: 9px; }
-      /* センター2人は必ず次の行にまとめて横並び */
-      .song-row .centers { order: 6; flex: 1 0 100%; }
-      .song-row .centers select { flex: 0 0 100px; width: 100px; }
-      .song-row .tog-btn.del-row { width: 34px; height: 34px; }
+      .song-row { gap: 4px; flex-wrap: nowrap; }
+      .song-row .type-select {
+        flex: 0 0 46px; width: 46px; font-size: 12px;
+        padding: 8px 14px 8px 4px; background-position: calc(100% - 6px) calc(50% + 1px), calc(100% - 3px) calc(50% + 1px);
+      }
+      .song-row .ac-wrap { flex: 1 1 60px; order: 2; min-width: 0; }
+      .song-row .ac-wrap input { font-size: 13px; padding: 8px 6px; }
+      .song-row .centers { order: 3; flex: 0 0 auto; gap: 4px; }
+      .song-row .tog-btn { order: 4; flex: 0 0 28px; }
+      .song-row .ins-del-wrap { order: 5; flex: 0 0 20px; }
+      .song-row .ins-del-wrap .del-row { width: 20px; height: 13px; font-size: 9px; }
+      .song-row .centers select {
+        flex: 0 0 44px; width: 44px; font-size: 11px;
+        padding: 8px 12px 8px 4px; background-position: calc(100% - 5px) calc(50% + 1px), calc(100% - 2px) calc(50% + 1px);
+      }
+      .song-row .tog-btn.del-row { width: 28px; height: 28px; }
     }
     .member-box {
       margin-top: 6px;
